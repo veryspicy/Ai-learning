@@ -1,0 +1,26 @@
+server:
+  port: 18016
+  servlet:
+    encoding:
+      enabled: true
+      force: true
+      charset: UTF-8
+spring:
+  application:
+    name: SAA-16ClientCallBaiduMcpServer
+  ai:
+    dashscope:
+      api-key: ${aliQwen-api}
+      chat:
+        options:
+          model: qwen3-max
+
+    mcp:
+      client:
+        type: async
+        request-timeout: 20s
+        toolcallback:
+          enabled: true
+        stdio:
+          servers-configuration: classpath:/mcp-server.json5
+

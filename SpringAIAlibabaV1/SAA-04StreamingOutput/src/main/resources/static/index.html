@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>SSE流式Chatmodel+ChatClient+多模型共存</title>
+    </head>
+    <body>
+        <textarea id="messageInput" rows="4" cols="50" placeholder="请输入你的问题..."></textarea><br>
+        <button onclick="sendMsg()">发送提问</button>
+        <div id="messageOutput"></div>
+    </body>
+    <script>
+        function sendMsg() {
+            const message = document.getElementById("messageInput").value;
+            if (message.length <= 0) return false;
+
+            const eventSource = new EventSource('/stream/chatFlux4?question=' + message);
+            eventSource.onmessage = function (event) {
+                const data = event.data;
+                const messageDiv = document.getElementById("messageOutput");
+                messageDiv.innerHTML += data;
+            }
+            eventSource.onerror = function (error) {
+                console.error('EventSource发生了错误: ', error);
+                eventSource.close();
+            }
+        }
+    </script>
+</html>

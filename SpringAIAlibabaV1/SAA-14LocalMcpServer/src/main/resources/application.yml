@@ -1,0 +1,18 @@
+server:
+  port: 18014
+  servlet:
+    encoding:
+      enabled: true
+      force: true
+      charset: UTF-8
+spring:
+  application:
+    name: SAA-14LocalMcpServer
+
+  ai:
+    mcp:
+      server:
+        type: async
+        name: customer-define-mcp-server
+        version: 1.0.0
+

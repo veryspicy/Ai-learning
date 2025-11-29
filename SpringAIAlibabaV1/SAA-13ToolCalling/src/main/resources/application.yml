@@ -1,0 +1,40 @@
+server:
+  port: 18013
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true
+
+spring:
+  application:
+    name: SAA-13ToolCalling
+
+  ai:
+    dashscope:
+      api-key: ${aliQwen-api}
+      embedding:
+        options:
+          model: text-embedding-v4
+      chat:
+        options:
+          model: qwen3-max
+
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: deepseek-r1:8b
+    vectorstore:
+      redis:
+        initialize-schema: true
+        index-name: rag-index
+        prefix: ragtest-prefix
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+#      connect-timeout: 3
+      timeout: 2
+#      password: root@000
+#      username: default

@@ -1,0 +1,106 @@
+package com.mayfly.study.config;
+
+
+
+import com.alibaba.cloud.ai.dashscope.api.DashScopeApi;
+import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatModel;
+import com.alibaba.cloud.ai.dashscope.chat.DashScopeChatOptions;
+import com.alibaba.cloud.ai.memory.redis.RedisChatMemoryRepository;
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
+import org.springframework.ai.chat.memory.MessageWindowChatMemory;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.prompt.ChatOptions;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class SaaLLMConfig {
+
+    private final String DEEPSEEK_MODEL = "deepseek-v3.2-exp";
+    private final String QWEN_MODEL = "qwen3-max";
+    private final String API_KEY = System.getenv("aliQwen-api");
+    private final String WORK_SPACE_ID = "llm-9ik4emzyre3e4vim";
+
+    @Bean
+    public DashScopeApi getDashScopeApi() {
+        return  DashScopeApi.builder()
+                .apiKey(API_KEY)
+                .workSpaceId(WORK_SPACE_ID)
+                .build();
+    }
+
+//    public OpenAiApi getOpenAiApi() {return  OpenAiApi.builder().apiKey(API_KEY).build();}
+
+    @Bean(name= "deepseek")
+    public ChatModel deepseek(DashScopeApi dashScopeApi){
+        return DashScopeChatModel.builder()
+                .dashScopeApi(dashScopeApi)
+                .defaultOptions(DashScopeChatOptions.builder().withModel(DEEPSEEK_MODEL).build())
+                .build();
+    }
+    @Bean(name= "qwen")
+    public ChatModel qwen(DashScopeApi dashScopeApi){
+        return DashScopeChatModel.builder()
+                .dashScopeApi(dashScopeApi)
+                .defaultOptions(DashScopeChatOptions.builder().withModel(QWEN_MODEL).build())
+                .build();
+    }
+
+//    @Bean(name= "deepseek")
+//    public ChatModel deepseek(){
+//        return OpenAiChatModel.builder()
+//                .openAiApi(getOpenAiApi())
+//                .defaultOptions(OpenAiChatOptions.builder().model(DEEPSEEK_MODEL).build())
+//                .build();
+//    }
+//    @Bean(name= "qwen")
+//    public ChatModel qwen(){
+//        return OpenAiChatModel.builder()
+//                .openAiApi(getOpenAiApi())
+//                .defaultOptions(OpenAiChatOptions.builder().model(QWEN_MODEL).build())
+//                .build();
+//    }
+
+    @Bean(name="deepseekChatClient")
+    public ChatClient deepseekChatClient(@Qualifier("deepseek") ChatModel deepseekChatModel, RedisChatMemoryRepository redisChatMemoryRepository) {
+        MessageWindowChatMemory windowChatMemory = MessageWindowChatMemory.builder()
+                .chatMemoryRepository(redisChatMemoryRepository)
+                .maxMessages(10)
+                .build();
+
+        return ChatClient.builder(deepseekChatModel)
+                .defaultOptions(ChatOptions.builder().model(DEEPSEEK_MODEL).build())
+                .defaultAdvisors(MessageChatMemoryAdvisor.builder(windowChatMemory).build())
+                .build();
+    }
+
+    // 增加RedisChatMemoryRepository
+    @Bean(name="qwenChatClient")
+    public ChatClient qwenChatClient(@Qualifier("qwen") ChatModel qwenChatModel, RedisChatMemoryRepository redisChatMemoryRepository){
+        // 定义一个消息窗口
+        MessageWindowChatMemory windowChatMemory = MessageWindowChatMemory.builder()
+                .chatMemoryRepository(redisChatMemoryRepository)
+                .maxMessages(10)
+                .build();
+
+        return ChatClient.builder(qwenChatModel)
+                .defaultOptions(ChatOptions.builder().model(QWEN_MODEL).build())
+                // 增加一个消息记忆顾问
+                .defaultAdvisors(MessageChatMemoryAdvisor.builder(windowChatMemory).build())
+                .build();
+    }
+
+    @Bean(name="qwenChatClient2")
+    public ChatClient qwenChatClient2(@Qualifier("qwen") ChatModel qwenChatModel){
+
+
+        return ChatClient.builder(qwenChatModel)
+                .defaultOptions(ChatOptions.builder().model(QWEN_MODEL).build())
+                .defaultAdvisors()
+                .build();
+    }
+
+
+}
